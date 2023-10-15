@@ -4,7 +4,7 @@ version: 3.0
 url: https://github.com/scruffynerf/TBD
 exec:
   - python
-  - plugins/ytdlp/ytdlp.py
+  - "{pluginDir}/ytdlp.py"
 interface: raw
 tasks:
   - name: Download Video
