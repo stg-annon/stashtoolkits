@@ -26,14 +26,11 @@ if not os.path.exists("config.py"):
 
 import config
 
-if not os.path.exists(config.urls_txt):
-   with open(config.urls_txt, 'w') as firstrun:
-     firstrun.write("")
-if not os.path.exists(config.grabbed_urls_txt):
-   with open(config.grabbed_urls_txt, 'w') as firstrun:
-     firstrun.write("")
 
 def main():
+
+    init_meta_files()
+
     json_input = json.loads(sys.stdin.read())
     stash = StashInterface(json_input["server_connection"])
 
@@ -173,6 +170,14 @@ def download(url, downloaded):
             downloaded.append(meta)
         except Exception as e:
             log.warning(str(e))
+
+def init_meta_files():
+    if not os.path.exists(config.urls_txt):
+        with open(config.urls_txt, 'w') as f:
+            f.write("")
+    if not os.path.exists(config.grabbed_urls_txt):
+        with open(config.grabbed_urls_txt, 'w') as f:
+            f.write("")
 
 if __name__ == "__main__":
 	main()
