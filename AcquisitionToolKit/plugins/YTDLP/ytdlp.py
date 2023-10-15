@@ -17,7 +17,7 @@ except ModuleNotFoundError:
 try:
     import yt_dlp
 except ModuleNotFoundError:
-    print("You need to install the Youtube Downloader (yt-dlp) python module. (CLI: pip install ytdlp)", file=sys.stderr)
+    print("You need to install the Youtube Downloader (yt-dlp) python module. (CLI: pip install yt-dlp)", file=sys.stderr)
 
 # configuration/settings
 if not os.path.exists("config.py"):
