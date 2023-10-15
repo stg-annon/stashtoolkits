@@ -34,47 +34,24 @@ if not os.path.exists(config.grabbed_urls_txt):
      firstrun.write("")
 
 def main():
-    json_input = read_json_input()
-    output = {}
-    run(json_input, output)
-    out = json.dumps(output)
-    print(out + "\n")
+    json_input = json.loads(sys.stdin.read())
+    stash = StashInterface(json_input["server_connection"])
 
-def read_json_input():
-    json_input = sys.stdin.read()
-    return json.loads(json_input)
+    PLUGIN_ARGS = json_input.get('args',{}).get('mode')
+    HOOK_CONTEXT = json_input.get('args',{}).get('hookContext')
 
-def run(json_input, output):
-    PLUGIN_ARGS = False
-    HOOKCONTEXT = False
-
-    try:
-        stash = StashInterface(json_input["server_connection"])
-    except Exception:
-        raise
-
-    try:
-        PLUGIN_ARGS = json_input['args']["mode"]
-    except:
-        pass
     if PLUGIN_ARGS == "download":
-            read_urls_and_download(stash)
-            stash.metadata_scan(paths=[config.download_dir])
-            output["output"] = "ok"
-            return
-
-    try:
-        HOOKCONTEXT = json_input['args']["hookContext"]
-    except:
-        output["output"] = "ok"
+        read_urls_and_download(stash)
+        stash.metadata_scan(paths=[config.download_dir])
         return
 
-    log.debug("--Starting YTDLP Hooks --")
-    sceneID = HOOKCONTEXT['id']
-    scene = stash.find_scene(sceneID)
-    tag_scene(scene, stash)
-    output["output"] = "ok"
-    return
+    if HOOK_CONTEXT:
+        log.debug("--Starting YTDLP Hooks --")
+        sceneID = HOOK_CONTEXT['id']
+        scene = stash.find_scene(sceneID)
+        tag_scene(scene, stash)
+    
+    log.exit()
 
 
 def tag_scene(scene, stash):
