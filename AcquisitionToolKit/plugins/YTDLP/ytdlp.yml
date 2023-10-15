@@ -1,5 +1,5 @@
-name: ytdlp Downloader
-description: Download a video with ytdlp
+name: YT-DLP
+description: Download scenes with yt-dlp
 version: 3.0
 url: https://github.com/scruffynerf/TBD
 exec:
@@ -10,10 +10,8 @@ tasks:
   - name: Download Video
     description: Download Videos from url list
     defaultArgs:
-      mode: download
-
-hooks:
-  - name: TagDownloads
-    description: Tag Videos Downloaded
-    triggeredBy:
-      - Scene.Create.Post
+      mode: download_video
+  - name: Post Scan
+    description: Task to run after files are download and scanned into stash
+    defaultArgs:
+      mode: post_scan

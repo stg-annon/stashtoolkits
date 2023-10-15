@@ -1,4 +1,4 @@
-import pathlib
+from pathlib import Path
 import re
 import sys
 import json
@@ -23,35 +23,55 @@ except ModuleNotFoundError:
 if not os.path.exists("config.py"):
     log.warning(f"config.py not found create it from example_config.py with your settings.")
     sys.exit()
+if not os.path.exists(config.urls_txt):
+    with open(config.urls_txt, 'w') as f:
+        f.write("")
+if not os.path.exists(config.grabbed_urls_txt):
+    with open(config.grabbed_urls_txt, 'w') as f:
+        f.write("")
 
 import config
 
+DOWNLOAD_PATH = str(Path(config.download_dir))
 
 def main():
-
-    init_meta_files()
+    global stash
 
     json_input = json.loads(sys.stdin.read())
     stash = StashInterface(json_input["server_connection"])
 
-    PLUGIN_ARGS = json_input.get('args',{}).get('mode')
-    HOOK_CONTEXT = json_input.get('args',{}).get('hookContext')
+    plugin_mode = json_input.get('args',{}).get('mode')
 
-    if PLUGIN_ARGS == "download":
-        read_urls_and_download(stash)
-        stash.metadata_scan(paths=[config.download_dir])
-        return
+    if plugin_mode == "download_video":
 
-    if HOOK_CONTEXT:
-        log.debug("--Starting YTDLP Hooks --")
-        sceneID = HOOK_CONTEXT['id']
-        scene = stash.find_scene(sceneID)
-        tag_scene(scene, stash)
+        log.info("Downloading")
+        read_urls_and_download()
+
+        log.info("Queue Scan Task")
+        stash.metadata_scan(paths=[DOWNLOAD_PATH])
+
+        log.info("Queue Plugin 'Hook' Task")
+        stash.run_plugin_task("ytdlp", "Post Scan", {"mode": "post_scan"})
+        
+    if plugin_mode == "post_scan":
+        log.info("Adding metadata to scenes in Stash")
+        scenes = stash.find_scenes(f={
+            "path": {
+                "value": DOWNLOAD_PATH,
+                "modifier": "INCLUDES"
+            },
+            "url": {
+                "value": "",
+                "modifier": "IS_NULL"
+            }
+        })
+        for scene in scenes:
+            tag_scene(scene)
     
     log.exit()
 
 
-def tag_scene(scene, stash):
+def tag_scene(scene):
     downloaded = False
     if not os.path.isfile(config.downloaded_json) and not os.path.isfile(config.downloaded_backup_json):
        return
@@ -117,7 +137,7 @@ def tag_scene(scene, stash):
                   update['cover_image'] = video.get('thumbnail')
                   stash.update_scene(update)
 
-def read_urls_and_download(stash):
+def read_urls_and_download():
     with open(config.urls_txt, 'r') as url_file:
         urls = url_file.readlines()
     with open(config.grabbed_urls_txt, 'r') as url_file:
@@ -170,14 +190,6 @@ def download(url, downloaded):
             downloaded.append(meta)
         except Exception as e:
             log.warning(str(e))
-
-def init_meta_files():
-    if not os.path.exists(config.urls_txt):
-        with open(config.urls_txt, 'w') as f:
-            f.write("")
-    if not os.path.exists(config.grabbed_urls_txt):
-        with open(config.grabbed_urls_txt, 'w') as f:
-            f.write("")
 
 if __name__ == "__main__":
 	main()
