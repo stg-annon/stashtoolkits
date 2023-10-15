@@ -21,14 +21,7 @@ except ModuleNotFoundError:
 
 # configuration/settings
 if not os.path.exists("config.py"):
-    with open("ytdlp_defaults.py", 'r') as default:
-        config_lines = default.readlines()
-    with open("config.py", 'w') as firstrun:
-        firstrun.write("from ytdlp_defaults import *\n")
-        for line in config_lines:
-            if not line.startswith("##"):
-                firstrun.write(f"#{line}")
-    log.warning(f"Config file config.py was created, you probably need to edit it now...")
+    log.warning(f"config.py not found create it from example_config.py with your settings.")
     sys.exit()
 
 import config
