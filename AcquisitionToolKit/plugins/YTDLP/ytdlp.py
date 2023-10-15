@@ -199,4 +199,5 @@ def download(url, downloaded):
         except Exception as e:
             log.warning(str(e))
 
-main()
+if __name__ == "__main__":
+	main()
