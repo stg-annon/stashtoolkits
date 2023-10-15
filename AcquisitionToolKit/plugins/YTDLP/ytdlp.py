@@ -150,9 +150,7 @@ def read_urls_and_download(stash):
         grabbed_urls = url_file.read()
     downloaded = []
     total = len(urls)
-    i = -1
-    for url in urls:
-        i += 1
+    for i, url in enumerate(urls):
         log.progress(i/total)
         this_url = url.strip()
         if this_url in grabbed_urls:
